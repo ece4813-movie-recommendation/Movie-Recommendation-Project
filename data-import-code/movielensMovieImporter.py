@@ -3,13 +3,14 @@ import re
 from pyspark import SparkContext
 from pyspark.sql import SQLContext, Row
 
+SPARK_HOME = os.environ['SPARK_HOME']
 # Regex used to seperate movie movieId, name, year, and genres
 RE = re.compile(r'(?P<movieId>\d+),"?(?P<name>.+)\((?P<year>\d+)\) ?"?,(?P<genres>.+)')
 sc = SparkContext("local", "MovielensMovieImporter") # Initialize the Spark context
 sqlContext = SQLContext(sc) # Initialize the SparkSQL context
 
 # Read in the text file as an RDD
-data = sc.textFile('../ml-latest-small/movies.csv')
+data = sc.textFile(SPARK_HOME + '/ml-latest-small/movies.csv')
 
 header = data.first() # Get the csv header
 data = data.filter(lambda line: line != header) # Filter out the csv header

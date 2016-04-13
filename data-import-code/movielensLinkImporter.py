@@ -4,7 +4,7 @@ from pyspark import SparkContext
 from pyspark.sql import SQLContext, Row
 
 SPARK_HOME = os.environ['SPARK_HOME']
-# Regex used to seperate movie movieId, name, year, and genres
+# Regex used to seperate movie movieId, imdbId, and tmdbId
 RE = re.compile(r'(?P<movieId>\d+),(?P<imdbId>\d+),(?P<tmdbId>\d+)?')
 sc = SparkContext("local", "MovielensLinkImporter") # Initialize the Spark context
 sqlContext = SQLContext(sc) # Initialize the SparkSQL context
