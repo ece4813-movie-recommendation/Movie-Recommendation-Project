@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>App!</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" media="screen" title="no title" charset="utf-8">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row search">
+        <div class="col-lg-8 col-lg-offset-2">
+          <div id="custom-search-input">
+            <div class="input-group col-md-12">
+              <input type="text" class="form-control input-lg search-input" placeholder="Movie Name"/>
+              <span class="input-group-btn">
+                <button class="btn btn-primary btn-lg search-icon" type="button">
+                    <span class="glyphicon glyphicon-search search-glyph"></span>
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="line"/>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

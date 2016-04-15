@@ -1,0 +1,38 @@
+body {
+  background-color: #311e3e;
+}
+
+.search {
+  margin-top: 120px;
+}
+
+.search-input {
+  outline: none;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  box-shadow: none !important;
+  border-radius: 2;
+  border: 0;
+  background-color: #87314e;
+}
+
+.search-glyph {
+  color: #df405a;
+}
+
+.search-icon {
+  border-radius: 0;
+  background-color: transparent;
+  border: 0;
+}
+
+.search-icon:hover {
+  border-radius: 0;
+  background-color: transparent;
+  border: 0
+}
+
+.line {
+  height: 2px;
+  background-color: white;
+}
