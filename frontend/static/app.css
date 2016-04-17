@@ -7,12 +7,6 @@ body {
 }
 
 .search-input {
-  outline: none;
-  -webkit-box-shadow: none !important;
-  -moz-box-shadow: none !important;
-  box-shadow: none !important;
-  border-radius: 2;
-  border: 0;
   background-color: #87314e;
 }
 
@@ -32,7 +26,26 @@ body {
   border: 0
 }
 
-.line {
-  height: 2px;
-  background-color: white;
+.search-icon:active {
+  border-radius: 0;
+  background-color: transparent;
+  border: 0
+}
+
+.results-title {
+  color: white;
+}
+
+.flex-cont {
+  padding-top: 50px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-justify-content: space-around;
+  justify-content: space-around;
+}
+
+.results-column {
+  width: 30%;
 }
