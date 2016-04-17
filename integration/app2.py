@@ -4,6 +4,7 @@ from flask import Blueprint
 from engine import RecommendationSystem
 import imdb
 import json
+import httplib, urllib
 
 main = Flask(__name__)
 
@@ -17,8 +18,10 @@ def get_svd_recomm(userid, movieid):
         info = recomsys.get_brief(mid1)
         l1.append(info)
 
+    conn = httplib.HTTPConnection("localhot:5000")
+    conn.request("POST", "/data", body=jsonify(l1))
     #return jsonify({'results': l1})
-    return json.dumps(l1, ensure_ascii=False)
+    #return json.dumps(l1, ensure_ascii=False)
 
 @main.route('/<int:userid>/svd_recomm_unknown/<int:movieid>', methods=['GET'])
 def get_svd_recomm_unknown(userid, movieid):
@@ -40,9 +43,11 @@ def get_svd_similar(userid, movieid):
     #return jsonify({'results': l3})
     return json.dumps(l3, ensure_ascii=False)
 
-@main.route('/')
+
+@main.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    if request.method == 'GET':
+        return render_template('index.html')
 
 if __name__ == '__main__':
     global recomsys
