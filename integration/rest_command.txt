@@ -1,0 +1,7 @@
+GET:
+
+curl -i http://localhost:5000/1/svd_recomm/1
+
+curl -i http://localhost:5000/1/svd_recomm_unknown/1
+
+curl -i http://localhost:5000/1/svd_similar/1
