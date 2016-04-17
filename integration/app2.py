@@ -18,7 +18,7 @@ def get_svd_recomm(userid, movieid):
         l1.append(info)
 
     #return jsonify({'results': l1})
-    return json.dumps(l1)
+    return json.dumps(l1, ensure_ascii=False)
 
 @main.route('/<int:userid>/svd_recomm_unknown/<int:movieid>', methods=['GET'])
 def get_svd_recomm_unknown(userid, movieid):
@@ -38,7 +38,7 @@ def get_svd_similar(userid, movieid):
         info = recomsys.get_brief(mid3)
         l3.append(info)
     #return jsonify({'results': l3})
-    return json.dumps(l3)
+    return json.dumps(l3, ensure_ascii=False)
 
 @main.route('/')
 def index():
