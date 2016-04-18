@@ -24,6 +24,17 @@ class RecommendationSystem():
         self.svd.create_matrix()
         self.ia = imdb.IMDb(accessSystem='http')
 
+    def get_all_recomm(self, userid, movieid):
+        recom1 = self.svd_recomm(userid, only_unknown=False)
+        recom2 = self.svd_recomm(userid, only_unknown=True)
+        recom3 = self.svd_similar(movieid)
+
+        brief_info1 = self.get_brief_list(recom1)
+        brief_info2 = self.get_brief_list(recom2)
+        brief_info3 = self.get_brief_list(recom3)
+
+        return [brief_info1, brief_info2, brief_info3]
+
     def svd_recomm(self, userid, only_unknown):
         user_found = False
         ratings = open(self.rating_file, 'r')
@@ -80,6 +91,13 @@ class RecommendationSystem():
 
         return m
 
+    def get_brief_list(self, movieList):
+        info_list = []
+        for m in movieList:
+            info = self.get_brief(m)
+            info_list.append(info)
+        return info_list
+
     def get_brief(self, movieid):
         info = {}
         info['title'] = 'unknown'
@@ -124,6 +142,20 @@ if __name__ == '__main__':
     rs = RecommendationSystem()
     #print type(rs.get_detail('0112556'))
 
+    l = rs.get_all_recomm(1,1)
+
+    l1 = l[0]
+    l2 = l[1]
+    l3 = l[2]
+
+    for l in l1:
+        print l['title']
+    for l in l2:
+        print l['title']
+    for l in l3:
+        print l['title']
+
+    """
     l1 = rs.svd_recomm(1,True)
     l2 = rs.svd_recomm(1, False)
     l3 = rs.svd_similar(1)
@@ -139,5 +171,9 @@ if __name__ == '__main__':
     print '-------'
     for k in l3:
         m = rs.get_brief(k)
-        #m = rs.get_detail(k)
+        # m = rs.get_detail(k)
         print m.get('title')
+    """
+
+
+
