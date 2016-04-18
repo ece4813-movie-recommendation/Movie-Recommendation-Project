@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import request, render_template, jsonify, url_for
 import json
+import time
+
 
 app = Flask(__name__)
 
@@ -15,15 +17,12 @@ def index():
 @app.route("/data", methods=['POST'])
 def post_data():
     global data
-    data = request.get_json()
-    return jsonify(data)
-
-@app.route("/data", methods=['GET'])
-def get_data():
-    global data
+    d = request.get_data()
+    print d
+    data = json.loads(d)
     return jsonify(data)
 
 if __name__ == "__main__":
     global data
-    data = {"data": "Empty"}
+    data = { "data": "Empty" }
     app.run(debug=True)
