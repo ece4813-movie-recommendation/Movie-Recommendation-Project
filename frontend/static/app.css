@@ -1,6 +1,9 @@
 body {
   background-color: #311e3e;
 }
+.logo{
+  padding-top: 180px;
+}
 
 .search {
   margin-top: 120px;
