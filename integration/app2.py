@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import Blueprint
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, redirect, url_for
 from flask import Blueprint
 from engine import RecommendationSystem
 import imdb
@@ -21,22 +21,10 @@ ia = imdb.IMDb(accessSystem='http')  # fetch from imdb web server
 conf = SparkConf().setAppName("movie_recommendation_server")
 sc = SparkContext(conf=conf, pyFiles=['/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/engine.py'])
 
-@main.route('/<int:userid>/recomm_all/<int:movieid>', methods=['GET'])
-def get_all_recomm(userid, movieid):
-    data = recomsys.get_all_recomm(userid, movieid)
-
-    """
-    url = "http://localhost:5000/data"
-    headers = {
-        'content-type': "application/json"
-    }
-    #cannot just dump data, not sure why
-    #response = requests.request("POST", url, data=json.dumps({'data':r1}, ensure_ascii=False), headers=headers)
-    response = requests.request("POST", url, data=json.dumps({'data': data[0]}, ensure_ascii=False), headers=headers)
-    return response.text
-    """
-    return json.dump(data, ensure_ascii=False)
-
+@main.route('/<int:userid>/recomm_all/<int:movieid>')
+def get_recomm_all(userid, movieid):
+    info = recomsys.get_all_recomm(userid, movieid)
+    return json.dumps(info, ensure_ascii=False)
 
 @main.route('/<int:userid>/svd_recomm/<int:movieid>', methods=['GET'])
 def get_svd_recomm(userid, movieid):
@@ -119,6 +107,13 @@ def index():
     return render_template('index.html')
 
 """
+@main.route('/go_to_result', methods=['POST'])
+def redirect_to_result():
+    #movieid = requests.form['title']
+    #return 'hello'
+    return redirect(url_for('get_recomm_all'), userid=1, movieid=1)
+
+
 def create_app(sc):
     global recomsys
     recomsys = RecommendationSystem(sc)
