@@ -197,7 +197,8 @@ class RecommendationSystem():
         return info
 
 if __name__ == '__main__':
-    sc = SparkContext("local", "collaborative_filtering_recommendation")
+    """
+    sc = SparkContext("local", "recommendation_sytem")
     rs = RecommendationSystem(sc)
     #print type(rs.get_detail('0112556'))
 
@@ -221,7 +222,7 @@ if __name__ == '__main__':
         print l['imdbid']
 
 
-    """
+
     l1 = rs.svd_recomm(1,True)
     l2 = rs.svd_recomm(1, False)
     l3 = rs.svd_similar(1)
