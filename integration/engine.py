@@ -34,6 +34,7 @@ class RecommendationSystem():
         self.complete_rating_file = datapath+complete_rating_file
         self.movie_file = datapath+movie_file
         self.detail_file = datapath+detail_file
+        self.integration_folder = datapath
         self.svd = SVD(filename=datapath+model)
         self.svd.load_data(filename=self.rating_file, sep=',', format={'col': 0, 'row': 1, 'value': 2, 'ids': int})
         self.svd.create_matrix()
@@ -55,7 +56,6 @@ class RecommendationSystem():
 
         #print type(recom3)
 
-        #brief_info1 = self.get_brief_list(recom1)
         brief_info1 = self.get_brief_list(recom1)
         brief_info2 = self.get_brief_list(recom2)
         brief_info3 = self.get_brief_list(recom3)
@@ -127,7 +127,7 @@ class RecommendationSystem():
         for movie in recommended_movies:
             recommended_movie_list.append(movie[1])
 
-        print recommended_movie_list
+        #print recommended_movie_list
         return recommended_movie_list
 
 
@@ -137,13 +137,13 @@ class RecommendationSystem():
             movieid_list.append(s[0])
         return movieid_list
 
-    def get_detail(self, imdb_id):
+    def get_detail(self, movieid, imdb_id):
         #print type(imdb_id)
         m = self.ia.get_movie(str(imdb_id))
 
         cover = m.get('cover url')
         if cover:
-            path = "Images/" + str(imdb_id) + ".jpg"
+            path = self.integration_folder + "Images/" + str(movieid) + ".jpg"
             urllib.urlretrieve(cover, path)
 
         return m
@@ -157,10 +157,11 @@ class RecommendationSystem():
 
     def get_brief(self, movieid):
         info = {}
+        info['movieid'] = movieid
         info['title'] = 'unknown'
         info['genre'] = 'unknown'
         info['rating'] = 0
-        info['imdb_id'] = 1
+        info['imdbid'] = 1
         info['director'] = 'unknown'
         info['cast'] = 'unknown'
 
@@ -187,7 +188,7 @@ class RecommendationSystem():
             row_item = d.split(',')
             if int(row_item[0]) == movieid:
                 #print 'found!'
-                info['imdb_id'] = int(row_item[1].strip())
+                info['imdbid'] = int(row_item[1].strip())
                 info['director'] = str(row_item[3].strip())
                 info['cast'] = str(row_item[4].strip()).split('|')
                 break
@@ -207,13 +208,18 @@ if __name__ == '__main__':
     l3 = l[2]
 
     for l in l1:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
     print '-------------'
+
     for l in l2:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
     print '-------------'
     for l in l3:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
+
 
     """
     l1 = rs.svd_recomm(1,True)
