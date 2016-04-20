@@ -54,32 +54,37 @@ class RecommendationSystem():
     def get_all_recomm(self, userid, moviename):
         movieid = self.get_movie_id(moviename)
         #recom1 = self.svd_recomm(userid, only_unknown=False)
-        print 'Hi'
-        recom1 = self.svd_recomm(userid, only_unknown=True)[0:10]
-        recom2 = self.svd_similar(movieid)[0:10]
-        recom3 = self.als_new(userid)[0:10]
+        #print 'Hi'
+        recom1 = self.svd_recomm(userid, only_unknown=True)
+        recom2 = self.svd_similar(movieid)
+        recom3 = self.als_new(userid)
         #recom3 = []
-
-        #print type(recom3)
 
         brief_info1 = self.get_brief_list(recom1)
         brief_info2 = self.get_brief_list(recom2)
         brief_info3 = self.get_brief_list(recom3)
 
-        print brief_info1
+        for l1 in brief_info1:
+            print l1
+        for l2 in brief_info2:
+            print l2
+        for l3 in brief_info3:
+            print l3
+
+        #print brief_info1
 
         #info = []
         #info.extend(brief_info1)
         #info.extend(brief_info2)
         #info.extend(brief_info3)
-        print 'Hi again!'
-        #return [brief_info2, brief_info3]
-        return [brief_info1[0:5], brief_info2[0:5], brief_info3[0:5]]
+        #print 'Hi again!'
+        return [brief_info1, brief_info2, brief_info3]
+        #return [brief_info1[0:5], brief_info2[0:5], brief_info3[0:5]]
         #return brief_info1
 
     def get_movie_id(self, moviename):
         r = self.movie_df.where(self.movie_df['name'].startswith(moviename)).first()
-        print r
+        #print r
 
         if r is None:
             return 1
@@ -177,6 +182,9 @@ class RecommendationSystem():
             info = self.get_brief(m)
             if info['title'] != 'unknown':
                 info_list.append(info)
+            if len(info_list) == 5:
+                break
+
         return info_list
 
     def get_brief(self, movieid):
@@ -194,6 +202,8 @@ class RecommendationSystem():
         if m is not None:
             info['title'] = m['name']
             info['genres'] = m['genres']
+            if len(info['genres']) > 3:
+                info['genres'] = info['genres'][0:3]
             #print info['title']
 
         d = self.detail_df.where(self.detail_df['movieId']==movieid).first()
@@ -245,6 +255,8 @@ class RecommendationSystem():
 
         return info
 
+
+"""
 if __name__ == '__main__':
 
     sc = SparkContext("local", "recommendation_sytem")
@@ -259,7 +271,7 @@ if __name__ == '__main__':
         print l
 
 
-    """
+
     l1 = l[0]
     l2 = l[1]
     l3 = l[2]
