@@ -27,7 +27,7 @@ def index():
     return render_template('index.html')
 
 @app.route("/<int:user_id>")
-def index(user_id):
+def index_id(user_id):
     global data
     global userid
     data = {"data": "Empty"}
