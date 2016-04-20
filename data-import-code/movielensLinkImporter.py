@@ -13,7 +13,7 @@ sqlContext = SQLContext(sc) # Initialize the SparkSQL context
 data = sc.textFile(SPARK_HOME + '/ml-latest-small/links.csv')
 
 header = data.first() # Get the csv header
-data = data.filter(lambda line: line != header) # Filter out the csv header
+#data = data.filter(lambda line: line != header) # Filter out the csv header
 
 # Split the CSV file into rows
 # Formatter that takes the CSV line and outputs it as a list of datapoints
