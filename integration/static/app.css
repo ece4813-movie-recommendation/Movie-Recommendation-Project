@@ -11,7 +11,6 @@ body {
 
 #input-box {
   background-color: #87314e;
-  color: white;
 }
 
 .search-glyph {
@@ -51,7 +50,7 @@ body {
 }
 
 .results-column {
-  width: 30%;
+  width: 24%;
 }
 
 .list-group-item {
@@ -63,17 +62,8 @@ body {
   background-color: #87314e !important;
 }
 
-h3.panel-title {
-   font-size: 20px;
-}
-
-.badge {
-    background-color: #512645 !important;
-}
-
 .panel-success {
   background-color: #512645;
-  font-size: 17px;
 }
 
 /* Loading spinner */

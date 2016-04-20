@@ -27,7 +27,7 @@ def get_counts_and_averages(ID_and_ratings_tuple):
 
 class RecommendationSystem():
     #def __init__(self, datapath='/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/', rating_file='ratings_small.csv', movie_file='movies.csv', detail_file='modified.csv', model='movielens_small'):
-    def __init__(self, sc, datapath='/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/', rating_file='ratings_small.csv', complete_rating_file='ratings.csv', movie_file='movies.csv', detail_file='modified.csv', model='movielens_small'):
+    def __init__(self, sc, datapath='/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/frontend/', rating_file='ratings_small.csv', complete_rating_file='ratings.csv', movie_file='movies.csv', detail_file='modified.csv', model='movielens_small'):
         self.sc = sc
         self.start = True
         self.rating_file = datapath+rating_file
@@ -51,11 +51,13 @@ class RecommendationSystem():
         self.rating_df = self.sqlContext.read.load(datapath+'tables/ratings')
 
 
-    def get_all_recomm(self, userid, movieid):
+    def get_all_recomm(self, userid, moviename):
+        movieid = self.get_movie_id(moviename)
         #recom1 = self.svd_recomm(userid, only_unknown=False)
-        recom1 = self.svd_recomm(userid, only_unknown=True)[0:5]
-        recom2 = self.svd_similar(movieid)[0:5]
-        recom3 = self.als_new(userid)[0:5]
+        print 'Hi'
+        recom1 = self.svd_recomm(userid, only_unknown=True)[0:10]
+        recom2 = self.svd_similar(movieid)[0:10]
+        recom3 = self.als_new(userid)[0:10]
         #recom3 = []
 
         #print type(recom3)
@@ -64,12 +66,25 @@ class RecommendationSystem():
         brief_info2 = self.get_brief_list(recom2)
         brief_info3 = self.get_brief_list(recom3)
 
+        print brief_info1
+
         #info = []
         #info.extend(brief_info1)
         #info.extend(brief_info2)
         #info.extend(brief_info3)
-        return [brief_info1, brief_info2, brief_info3]
-        #return info
+        print 'Hi again!'
+        #return [brief_info2, brief_info3]
+        return [brief_info1[0:5], brief_info2[0:5], brief_info3[0:5]]
+        #return brief_info1
+
+    def get_movie_id(self, moviename):
+        r = self.movie_df.where(self.movie_df['name'].startswith(moviename)).first()
+        print r
+
+        if r is None:
+            return 1
+
+        return r['movieId']
 
     def svd_recomm(self, userid, only_unknown):
         user_found = False
@@ -160,7 +175,8 @@ class RecommendationSystem():
         info_list = []
         for m in movieList:
             info = self.get_brief(m)
-            info_list.append(info)
+            if info['title'] != 'unknown':
+                info_list.append(info)
         return info_list
 
     def get_brief(self, movieid):
@@ -187,11 +203,13 @@ class RecommendationSystem():
 
         r = self.rating_df.where(self.rating_df['movieId']==movieid)
 
-        avg = r.map(lambda row:row['rating']).reduce(lambda x, y: x+y)/r.count()
+        if r.count()==0:
+            info['rating'] = 4.6
+        else:
+            avg = r.map(lambda row:row['rating']).reduce(lambda x, y: x+y)/r.count()
+            info['rating'] = avg
 
-        info['rating'] = avg
-
-        print info
+        #print info
 
         """
         movies = open(self.movie_file, 'r')
@@ -233,12 +251,19 @@ if __name__ == '__main__':
     rs = RecommendationSystem(sc)
     #print type(rs.get_detail('0112556'))
 
-    l = rs.get_all_recomm(1,1)
+    l1 = rs.get_all_recomm(1, 'Toy Story')
 
+    l2 = rs.get_all_recomm(1, 'Toy Story 2')
+
+    for l in l1:
+        print l
+
+
+    """
     l1 = l[0]
     l2 = l[1]
     l3 = l[2]
-    """
+
     for l in l1:
         rs.get_detail(l['movieid'], l['imdbid'])
         print l['imdbid']
