@@ -5,12 +5,15 @@ from pyspark.sql import SQLContext, Row
 
 SPARK_HOME = os.environ['SPARK_HOME']
 # Regex used to seperate movie movieId, imdbId, and tmdbId
-RE = re.compile(r'(?P<movieId>\d+),(?P<imdbId>\d+),(?P<tmdbId>\d+)?')
-sc = SparkContext("local", "MovielensLinkImporter") # Initialize the Spark context
+RE = re.compile(r'(?P<movieId>\d+),(?P<imdbId>\d+),(?P<tmdbId>\d+),(?P<director>.+),(?P<cast>.+)')
+
+#(r'(?P<movieId>\d+),"?(?P<name>.+)\((?P<year>\d+)\) ?"?,(?P<genres>.+)')
+
+sc = SparkContext("local", "MovielensDetailImporter") # Initialize the Spark context
 sqlContext = SQLContext(sc) # Initialize the SparkSQL context
 
 # Read in the text file as an RDD
-data = sc.textFile(SPARK_HOME + '/ml-latest-small/links.csv')
+data = sc.textFile('/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/modified.csv')
 
 header = data.first() # Get the csv header
 #data = data.filter(lambda line: line != header) # Filter out the csv header
@@ -28,7 +31,10 @@ def formatter(line):
             tmdbId = int(m['tmdbId'])
         else:
             tmdbId = -1
-        return [movieId, imdbId, tmdbId]
+        director = m['director']
+        cast = m['cast'].split('|')
+        print [movieId, imdbId, tmdbId, director, cast]
+        return [movieId, imdbId, tmdbId, director, cast]
 
 data = data.map(formatter)
 data = data.filter(lambda line: line != None) # Filter out rows that dont match
@@ -37,9 +43,9 @@ data = data.filter(lambda line: line != None) # Filter out rows that dont match
 print data.count()
 
 # Map the data into a Row data object to prepare it for insertion
-rows = data.map(lambda r: Row(movieId=r[0], imdbId=r[1], tmdbId=r[2]))
+rows = data.map(lambda r: Row(movieId=r[0], imdbId=r[1], tmdbId=r[2], director=r[3], cast=r[4]))
 
 # Create the schema for movies and register a table for it
 schemaLinks = sqlContext.createDataFrame(rows)
-schemaLinks.registerTempTable("links")
-schemaLinks.save('../tables/links')
+schemaLinks.registerTempTable("detail")
+schemaLinks.save('/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/tables/detail')

@@ -10,10 +10,11 @@ sc = SparkContext("local", "MovielensLinkImporter") # Initialize the Spark conte
 sqlContext = SQLContext(sc) # Initialize the SparkSQL context
 
 # Read in the text file as an RDD
-data = sc.textFile(SPARK_HOME + '/ml-latest-small/ratings.csv')
+#data = sc.textFile(SPARK_HOME + '/ml-latest-small/ratings.csv')
+data = sc.textFile('/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/ratings_small.csv')
 
 header = data.first() # Get the csv header
-data = data.filter(lambda line: line != header) # Filter out the csv header
+#data = data.filter(lambda line: line != header) # Filter out the csv header
 
 # Split the CSV file into rows
 # Formatter that takes the CSV line and outputs it as a list of datapoints
@@ -39,5 +40,5 @@ rows = data.map(lambda r: Row(userId=r[0], movieId=r[1], rating=r[2], timestamp=
 
 # Create the schema for movies and register a table for it
 schemaRatings = sqlContext.createDataFrame(rows)
-schemaRatings.registerTempTable("ratings")
-schemaRatings.save('../tables/ratings')
+schemaRatings.registerTempTable("ratings_small")
+schemaRatings.save('/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/tables/ratings_small')

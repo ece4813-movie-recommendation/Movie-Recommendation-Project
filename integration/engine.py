@@ -34,6 +34,7 @@ class RecommendationSystem():
         self.complete_rating_file = datapath+complete_rating_file
         self.movie_file = datapath+movie_file
         self.detail_file = datapath+detail_file
+        self.integration_folder = datapath
         self.svd = SVD(filename=datapath+model)
         self.svd.load_data(filename=self.rating_file, sep=',', format={'col': 0, 'row': 1, 'value': 2, 'ids': int})
         self.svd.create_matrix()
@@ -45,22 +46,30 @@ class RecommendationSystem():
         self.ratings_data = self.sc.textFile(self.complete_rating_file).map(lambda line: line.split(",")).map(lambda x: (int(x[0]), int(x[1]), float(x[2])))
         self.als_model_path = datapath + 'Model_Collaborative_Filtering'
         self.als_model = MatrixFactorizationModel.load(sc, self.als_model_path)
+        self.movie_df = self.sqlContext.read.load(datapath+'tables/movies')
+        self.detail_df = self.sqlContext.read.load(datapath+'tables/detail')
+        self.rating_df = self.sqlContext.read.load(datapath+'tables/ratings')
 
 
     def get_all_recomm(self, userid, movieid):
         #recom1 = self.svd_recomm(userid, only_unknown=False)
-        recom1 = self.svd_recomm(userid, only_unknown=True)
-        recom2 = self.svd_similar(movieid)
-        recom3 = self.als_new(userid)
+        recom1 = self.svd_recomm(userid, only_unknown=True)[0:5]
+        recom2 = self.svd_similar(movieid)[0:5]
+        recom3 = self.als_new(userid)[0:5]
+        #recom3 = []
 
         #print type(recom3)
 
-        #brief_info1 = self.get_brief_list(recom1)
         brief_info1 = self.get_brief_list(recom1)
         brief_info2 = self.get_brief_list(recom2)
         brief_info3 = self.get_brief_list(recom3)
 
+        #info = []
+        #info.extend(brief_info1)
+        #info.extend(brief_info2)
+        #info.extend(brief_info3)
         return [brief_info1, brief_info2, brief_info3]
+        #return info
 
     def svd_recomm(self, userid, only_unknown):
         user_found = False
@@ -115,8 +124,7 @@ class RecommendationSystem():
         user_recommended_movies_ratings_count_rdd = (user_recommended_ratings_rdd.join(movie_rating_counts_rdd)).map(lambda l: (l[0], l[1][0], l[1][1]))
         recommended_movies_list = user_recommended_movies_ratings_count_rdd.filter(lambda l: l[2] >= 20).takeOrdered(20, key=lambda x: -x[1])
 
-
-        print recommended_movies_list
+        #print recommended_movies_list
         return recommended_movies_list
 
     def als_new(self, userid):
@@ -127,7 +135,7 @@ class RecommendationSystem():
         for movie in recommended_movies:
             recommended_movie_list.append(movie[1])
 
-        print recommended_movie_list
+        #print recommended_movie_list
         return recommended_movie_list
 
 
@@ -137,13 +145,13 @@ class RecommendationSystem():
             movieid_list.append(s[0])
         return movieid_list
 
-    def get_detail(self, imdb_id):
+    def get_detail(self, movieid, imdb_id):
         #print type(imdb_id)
         m = self.ia.get_movie(str(imdb_id))
 
         cover = m.get('cover url')
         if cover:
-            path = "Images/" + str(imdb_id) + ".jpg"
+            path = self.integration_folder + "Images/" + str(movieid) + ".jpg"
             urllib.urlretrieve(cover, path)
 
         return m
@@ -157,13 +165,35 @@ class RecommendationSystem():
 
     def get_brief(self, movieid):
         info = {}
+        info['movieid'] = movieid
         info['title'] = 'unknown'
-        info['genre'] = 'unknown'
+        info['genres'] = 'unknown'
         info['rating'] = 0
-        info['imdb_id'] = 1
+        #info['imdbid'] = 1
         info['director'] = 'unknown'
         info['cast'] = 'unknown'
 
+
+        m = self.movie_df.where(self.movie_df['movieId']==movieid).first()
+        if m is not None:
+            info['title'] = m['name']
+            info['genres'] = m['genres']
+            #print info['title']
+
+        d = self.detail_df.where(self.detail_df['movieId']==movieid).first()
+        if d is not None:
+            info['director'] = d['director']
+            info['cast'] = d['cast']
+
+        r = self.rating_df.where(self.rating_df['movieId']==movieid)
+
+        avg = r.map(lambda row:row['rating']).reduce(lambda x, y: x+y)/r.count()
+
+        info['rating'] = avg
+
+        print info
+
+        """
         movies = open(self.movie_file, 'r')
         for m in movies:
             row_item = m.split(',')
@@ -187,16 +217,19 @@ class RecommendationSystem():
             row_item = d.split(',')
             if int(row_item[0]) == movieid:
                 #print 'found!'
-                info['imdb_id'] = int(row_item[1].strip())
+                info['imdbid'] = int(row_item[1].strip())
                 info['director'] = str(row_item[3].strip())
                 info['cast'] = str(row_item[4].strip()).split('|')
                 break
         details.close()
+        """
+
 
         return info
 
 if __name__ == '__main__':
-    sc = SparkContext("local", "collaborative_filtering_recommendation")
+
+    sc = SparkContext("local", "recommendation_sytem")
     rs = RecommendationSystem(sc)
     #print type(rs.get_detail('0112556'))
 
@@ -205,17 +238,20 @@ if __name__ == '__main__':
     l1 = l[0]
     l2 = l[1]
     l3 = l[2]
-
+    """
     for l in l1:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
     print '-------------'
+
     for l in l2:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
     print '-------------'
     for l in l3:
-        print l['title'], l['genre']
+        rs.get_detail(l['movieid'], l['imdbid'])
+        print l['imdbid']
 
-    """
     l1 = rs.svd_recomm(1,True)
     l2 = rs.svd_recomm(1, False)
     l3 = rs.svd_similar(1)
