@@ -15,19 +15,32 @@ conf = SparkConf().setAppName("movie_recommendation_server")
 sc = SparkContext(conf=conf, pyFiles=['/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/frontend/engine.py'])
 
 global data
+global userid
+
 
 @app.route("/")
 def index():
     global data
+    global userid
     data = {"data": "Empty"}
+    userid = 1
+    return render_template('index.html')
+
+@app.route("/<int:user_id>")
+def index(user_id):
+    global data
+    global userid
+    data = {"data": "Empty"}
+    userid = user_id
     return render_template('index.html')
 
 @app.route("/data", methods=['POST'])
 def post_data():
     global data
+    global userid
     d = request.get_data()
     data = json.loads(d)
-    info = recomsys.get_all_recomm(1, data['data'])
+    info = recomsys.get_all_recomm(userid, data['data'])
     return jsonify({'data': info})
     #return jsonify(data)
 
