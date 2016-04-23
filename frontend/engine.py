@@ -1,3 +1,9 @@
+# this is the backend engine for the movie recommendation system
+# ECE 4813 Team 5
+# Thomas Barnes, Rohit Belapurkar,
+# Baishen Huang, Zeeshan Khan,
+# Rashmi Mehere, Nishant Shah
+
 import recsys.algorithm
 from recsys.algorithm.factorize import SVD
 import imdb
@@ -26,7 +32,7 @@ def get_counts_and_averages(ID_and_ratings_tuple):
     return ID_and_ratings_tuple[0], (nratings, float(sum(x for x in ID_and_ratings_tuple[1])) / nratings)
 
 class RecommendationSystem():
-    #def __init__(self, datapath='/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/integration/', rating_file='ratings_small.csv', movie_file='movies.csv', detail_file='modified.csv', model='movielens_small'):
+    # To run on your own machine, you need to initialize with your datapath to the frontend folder
     def __init__(self, sc, datapath='/media/psf/Home/CS/GIT_HUB/Movie-Recommendation-Project/frontend/', rating_file='ratings_small.csv', complete_rating_file='ratings.csv', movie_file='movies.csv', detail_file='modified.csv', model='movielens_small'):
         self.sc = sc
         self.start = True
@@ -51,19 +57,21 @@ class RecommendationSystem():
         self.rating_df = self.sqlContext.read.load(datapath+'tables/ratings')
 
 
+    # call this function to get all recommendations
     def get_all_recomm(self, userid, moviename):
         movieid = self.get_movie_id(moviename)
-        #recom1 = self.svd_recomm(userid, only_unknown=False)
-        #print 'Hi'
+
+        # all recommendation algorithms return a list of movie ids
         recom1 = self.svd_recomm(userid, only_unknown=True)
         recom2 = self.svd_similar(movieid)
         recom3 = self.als_new(userid)
-        #recom3 = []
 
+        #get info about the movie based on movie ids
         brief_info1 = self.get_brief_list(recom1)
         brief_info2 = self.get_brief_list(recom2)
         brief_info3 = self.get_brief_list(recom3)
 
+        # print to terminal
         for l1 in brief_info1:
             print l1
         for l2 in brief_info2:
@@ -71,26 +79,19 @@ class RecommendationSystem():
         for l3 in brief_info3:
             print l3
 
-        #print brief_info1
-
-        #info = []
-        #info.extend(brief_info1)
-        #info.extend(brief_info2)
-        #info.extend(brief_info3)
-        #print 'Hi again!'
         return [brief_info1, brief_info2, brief_info3]
-        #return [brief_info1[0:5], brief_info2[0:5], brief_info3[0:5]]
-        #return brief_info1
 
+    # get movie id based on movie name input
     def get_movie_id(self, moviename):
         r = self.movie_df.where(self.movie_df['name'].startswith(moviename)).first()
-        #print r
 
+        # return movie id 1 if not found
         if r is None:
             return 1
 
         return r['movieId']
 
+    # svd recommendation algorithm based on the user's rating history, set only_known to True for unseen movies
     def svd_recomm(self, userid, only_unknown):
         user_found = False
         ratings = open(self.rating_file, 'r')
@@ -104,7 +105,7 @@ class RecommendationSystem():
         if not user_found:
             return None
 
-        #output format: (movieid, similarity value)
+        # output format: (movieid, similarity value)
         if only_unknown:
             similar_list = self.svd.recommend(userid, n=10, only_unknowns=True, is_row=True)
         else:
@@ -113,12 +114,13 @@ class RecommendationSystem():
         movieid_list = self.get_id_list(similar_list)
         return movieid_list
 
+    # svd recommendation algorithm based on similar movie
     def svd_similar(self, movieid):
         movie_found = False
         movies = open(self.movie_file, 'r')
         for movie_row in movies:
             row_item = movie_row.split(',')
-            if (int(row_item[0]) == movieid):
+            if int(row_item[0]) == movieid:
                 movie_found = True
                 break
 
@@ -130,43 +132,44 @@ class RecommendationSystem():
         movieid_list = self.get_id_list(similar_list)
         return movieid_list
 
+    # this ALS recommendation algorithm did not get to present to front end
+    # future work is needed to improve this algorithm
     def als_recomm(self, userid):
         user_movie_ratings = [16, 24, 32, 47, 50, 110, 150, 161, 165, 204, 223, 256, 260, 261, 277]
         unrated_movies = self.movie_data.filter(lambda x: x[0] not in user_movie_ratings).map(lambda x: (userid, x[0]))
         recommended_movies_rdd = self.als_model.predictAll(unrated_movies)
         # Now we get a list of predictions for all the movies which user has not seen. We take only the top 10 predictions
         user_recommended_ratings_rdd = recommended_movies_rdd.map(lambda x: (x.product, x.rating))
-        ##
+
         movie_ID_with_ratings_RDD = self.ratings_data.map(lambda x: (x[1], x[2])).groupByKey()
         movie_ID_with_avg_ratings_RDD = movie_ID_with_ratings_RDD.map(get_counts_and_averages)
         movie_rating_counts_rdd = movie_ID_with_avg_ratings_RDD.map(lambda x: (x[0], x[1][0]))
-        ##
+
         user_recommended_movies_ratings_count_rdd = (user_recommended_ratings_rdd.join(movie_rating_counts_rdd)).map(lambda l: (l[0], l[1][0], l[1][1]))
         recommended_movies_list = user_recommended_movies_ratings_count_rdd.filter(lambda l: l[2] >= 20).takeOrdered(20, key=lambda x: -x[1])
 
-        #print recommended_movies_list
         return recommended_movies_list
 
+    # an ALS recommendation algorithm based on user rating history
     def als_new(self, userid):
-        #ratings_data = sc.textFile("./ratings.csv")
-        #ratings = ratings_data.map(lambda l: l.split(',')).map(lambda r: (int(r[0]), int(r[1]), float(r[2])))
         recommended_movies = self.als_model.recommendProducts(userid, 10)
         recommended_movie_list = []
         for movie in recommended_movies:
             recommended_movie_list.append(movie[1])
 
-        #print recommended_movie_list
         return recommended_movie_list
 
-
+    # return a list of movie id
     def get_id_list(self, l):
         movieid_list = []
         for s in l:
             movieid_list.append(s[0])
         return movieid_list
 
+    # this function connects to imdb database to get info (including cover image)
+    # did not make it to front end due to performance and latency issue
+    # need future work for improvement
     def get_detail(self, movieid, imdb_id):
-        #print type(imdb_id)
         m = self.ia.get_movie(str(imdb_id))
 
         cover = m.get('cover url')
@@ -176,6 +179,7 @@ class RecommendationSystem():
 
         return m
 
+    # get a list of movie info given a list of movie ids
     def get_brief_list(self, movieList):
         info_list = []
         for m in movieList:
@@ -187,6 +191,7 @@ class RecommendationSystem():
 
         return info_list
 
+    # get movie info (title, direction, genres, rating, cast) from our rdd database
     def get_brief(self, movieid):
         info = {}
         info['movieid'] = movieid
@@ -197,115 +202,48 @@ class RecommendationSystem():
         info['director'] = 'unknown'
         info['cast'] = 'unknown'
 
-
-        m = self.movie_df.where(self.movie_df['movieId']==movieid).first()
+        m = self.movie_df.where(self.movie_df['movieId'] == movieid).first()
         if m is not None:
             info['title'] = m['name']
             info['genres'] = m['genres']
             if len(info['genres']) > 3:
                 info['genres'] = info['genres'][0:3]
-            #print info['title']
 
-        d = self.detail_df.where(self.detail_df['movieId']==movieid).first()
+        d = self.detail_df.where(self.detail_df['movieId'] == movieid).first()
         if d is not None:
             info['director'] = d['director']
             info['cast'] = d['cast']
 
-        r = self.rating_df.where(self.rating_df['movieId']==movieid)
+        r = self.rating_df.where(self.rating_df['movieId'] == movieid)
 
+        # default rating to be 4.6
         if r.count()==0:
             info['rating'] = 4.6
         else:
             avg = r.map(lambda row:row['rating']).reduce(lambda x, y: x+y)/r.count()
             info['rating'] = avg
 
-        #print info
-
-        """
-        movies = open(self.movie_file, 'r')
-        for m in movies:
-            row_item = m.split(',')
-            if int(row_item[0]) == movieid:
-                info['title'] = str(row_item[1].strip())
-                info['genre'] = str(row_item[2].strip()).split('|')
-                break
-        movies.close()
-
-        ratings = open(self.rating_file, 'r')
-        for r in ratings:
-            row_item = r.split(',')
-            if int(row_item[1]) == movieid:
-                info['rating'] = float(row_item[2].strip())
-                break
-        ratings.close()
-
-        details = open(self.detail_file, 'r')
-        #details = codecs.open(self.detail_file, 'r', 'utf-8')
-        for d in details:
-            row_item = d.split(',')
-            if int(row_item[0]) == movieid:
-                #print 'found!'
-                info['imdbid'] = int(row_item[1].strip())
-                info['director'] = str(row_item[3].strip())
-                info['cast'] = str(row_item[4].strip()).split('|')
-                break
-        details.close()
-        """
-
-
         return info
 
-
+# uncomment out for backend engine testing
 """
 if __name__ == '__main__':
 
-    sc = SparkContext("local", "recommendation_sytem")
+    sc = SparkContext("local", "recommendation_system")
     rs = RecommendationSystem(sc)
-    #print type(rs.get_detail('0112556'))
 
-    l1 = rs.get_all_recomm(1, 'Toy Story')
+    l = rs.get_all_recomm(1, 'Toy Story')
 
-    l2 = rs.get_all_recomm(1, 'Toy Story 2')
+    l0 = l[0]
+    l1 = l[1]
+    l2 = l[2]
 
+    for l in l0:
+        print l
     for l in l1:
         print l
-
-
-
-    l1 = l[0]
-    l2 = l[1]
-    l3 = l[2]
-
-    for l in l1:
-        rs.get_detail(l['movieid'], l['imdbid'])
-        print l['imdbid']
-    print '-------------'
-
     for l in l2:
-        rs.get_detail(l['movieid'], l['imdbid'])
-        print l['imdbid']
-    print '-------------'
-    for l in l3:
-        rs.get_detail(l['movieid'], l['imdbid'])
-        print l['imdbid']
-
-    l1 = rs.svd_recomm(1,True)
-    l2 = rs.svd_recomm(1, False)
-    l3 = rs.svd_similar(1)
-
-    for l in l1:
-        m = rs.get_brief(l)
-        print m.get('title')
-
-    print '-------'
-    for r in l2:
-        m = rs.get_brief(r)
-        print m.get('title')
-    print '-------'
-    for k in l3:
-        m = rs.get_brief(k)
-        # m = rs.get_detail(k)
-        print m.get('title')
+        print l
     """
 
 

@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         info_str += "Director: " + director + "<br>"
         info_str += "Cast: " + actors + "<br>"
         var res = string_template.replace('Movie Title', title)
-        var res = res.replace('Rating', Math.round(ratings, 2) + '★')
+        var res = res.replace('Rating', ratings.toPrecision(2) + '★')
         var res = res.replace('Extra Information', info_str)
         $('.lg-' + index_main).append(res);
       })
