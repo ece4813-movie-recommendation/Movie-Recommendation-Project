@@ -1,3 +1,6 @@
+# this flask app connects backend engine
+# and front end html/css and javascript
+
 from flask import Flask
 from flask import request, render_template, jsonify, url_for
 import json
