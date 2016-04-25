@@ -4,6 +4,12 @@
 import recsys.algorithm
 from recsys.algorithm.factorize import SVD
 
+'''
+Non personalized movie recommendation system. Takes a movie as an input
+eg: Captain America will return Iron Man, Avengers, Sherlock Holmes and so on.
+'''
+
+
 
 #Lets make things Verbose
 recsys.algorithm.VERBOSE = True

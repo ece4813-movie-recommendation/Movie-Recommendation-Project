@@ -6,6 +6,9 @@
 import recsys.algorithm
 from recsys.algorithm.factorize import SVD
 
+'''
+SVD Model Computation
+'''
 
 #To obtain make the script verbose.
 recsys.algorithm.VERBOSE = True

@@ -4,6 +4,9 @@
 import recsys.algorithm
 from recsys.algorithm.factorize import SVD
 
+'''
+SVD recommendation for best fit movies. Includes known and unknown movies
+'''
 
 #Lets make things Verbose
 recsys.algorithm.VERBOSE = True

@@ -13,6 +13,8 @@ from pyspark.mllib.recommendation import Rating
 Computing the model used for Collaborative Filtering using ALS
 NOTE: ratings = /PATH_FOR_RATINGS_FILE
       mode_path = /PATH_FOR_SAVING_FILE
+	  
+Use this file to compute the model. need to do this only once
 '''
 sc = SparkContext("local", "collaborative_filtering") #initializing sc
 sqlContext = SQLContext(sc)

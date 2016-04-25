@@ -9,6 +9,11 @@ from pyspark.mllib.recommendation import MatrixFactorizationModel
 from pyspark.mllib.recommendation import Rating
 
 
+'''
+This is just a demo code. Though this will return some recommendation, this is not what we 
+used for the final recommendation engine. THe actual code for recommendation is in engine file
+'''
+
 
 sc = SparkContext("local", "collaborative_filtering_recommendation") #initializing sc
 sqlContext = SQLContext(sc)

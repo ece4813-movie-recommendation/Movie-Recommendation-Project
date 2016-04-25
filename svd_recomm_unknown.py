@@ -4,6 +4,10 @@
 import recsys.algorithm
 from recsys.algorithm.factorize import SVD
 
+'''
+SVD recommendation only for unknown movies
+'''
+
 
 #Lets make things Verbose
 recsys.algorithm.VERBOSE = True
