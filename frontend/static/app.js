@@ -1,12 +1,5 @@
 document.addEventListener("DOMContentLoaded", function(event) {
 
-  var eg = {
-    '1': [11, 12, 13, 14, 15],
-    '2': [21, 22, 23, 24, 25],
-    '3': [31, 32, 33, 34, 35],
-    '4': [41, 42, 43, 44, 45]
-  }
-
   $('.search-icon').click(function() {
     handleInput()
   });
@@ -22,12 +15,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var input = ip_box.val(); // Get the input value
     if (input != '') {
       output = { 'data': input }
-      /*$.post('/data', JSON.stringify(output), function success(returnedData, status, resp) {
-        // Modify page
-        console.log(returnedData)
-        populateData(returnedData)
-        $('.loader').addClass('hidden')
-      }, 'json');*/
+      // Post request to app.py to start the machine learning algorithm
       $.ajax({
         type: "POST",
         url: "/data",
@@ -46,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   }
 
   function populateData(data) {
+    // Template of the
     var string_template = `
     <li class="list-group-item">
       <div class="panel panel-success">
@@ -57,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         </div>
       </div>
     </li>`
+    // The each function is provided by jQuery, it itereates over a list or map
     $.each(data, function(index_main, val) {
       $('.lg-' + index_main).empty();
       $.each(val, function(index, info) {
